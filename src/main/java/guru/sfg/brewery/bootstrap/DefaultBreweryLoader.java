@@ -17,10 +17,17 @@
 package guru.sfg.brewery.bootstrap;
 
 import guru.sfg.brewery.domain.*;
+import guru.sfg.brewery.domain.security.Authority;
+import guru.sfg.brewery.domain.security.User;
 import guru.sfg.brewery.repositories.*;
+import guru.sfg.brewery.repositories.security.AuthorityRepository;
+import guru.sfg.brewery.repositories.security.UserRepository;
 import guru.sfg.brewery.web.model.BeerStyleEnum;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -32,6 +39,7 @@ import java.util.UUID;
  */
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class DefaultBreweryLoader implements CommandLineRunner {
 
     public static final String TASTING_ROOM = "Tasting Room";
@@ -44,11 +52,47 @@ public class DefaultBreweryLoader implements CommandLineRunner {
     private final BeerInventoryRepository beerInventoryRepository;
     private final BeerOrderRepository beerOrderRepository;
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
+    private final AuthorityRepository authorityRepository;
 
     @Override
     public void run(String... args) {
         loadBreweryData();
         loadCustomerData();
+        loadUserData();
+    }
+
+    private void loadUserData() {
+
+        var adminAuth = authorityRepository.save(Authority.builder()
+                .role("ADMIN")
+                .build());
+        var userAuth = authorityRepository.save(Authority.builder()
+                .role("USER")
+                .build());
+        var customerAuth = authorityRepository.save(Authority.builder()
+                .role("CUSTOMER")
+                .build());
+
+        PasswordEncoder bcrypt = new BCryptPasswordEncoder(10);
+
+        userRepository.save(User.builder()
+                .username("spring")
+                .password(bcrypt.encode("guru"))
+                .authorities(Set.of(adminAuth, userAuth))
+                .build());
+        userRepository.save(User.builder()
+                .username("user")
+                .password(bcrypt.encode("password"))
+                .authority(userAuth)
+                .build());
+        userRepository.save(User.builder()
+                .username("scott")
+                .password(bcrypt.encode("tiger"))
+                .authority(customerAuth)
+                .build());
+
+        log.debug("users loaded: " + userRepository.count());
     }
 
     private void loadCustomerData() {
@@ -59,16 +103,14 @@ public class DefaultBreweryLoader implements CommandLineRunner {
 
         customerRepository.save(tastingRoom);
 
-        beerRepository.findAll().forEach(beer -> {
-            beerOrderRepository.save(BeerOrder.builder()
-                    .customer(tastingRoom)
-                    .orderStatus(OrderStatusEnum.NEW)
-                    .beerOrderLines(Set.of(BeerOrderLine.builder()
-                            .beer(beer)
-                            .orderQuantity(2)
-                            .build()))
-                    .build());
-        });
+        beerRepository.findAll().forEach(beer -> beerOrderRepository.save(BeerOrder.builder()
+                .customer(tastingRoom)
+                .orderStatus(OrderStatusEnum.NEW)
+                .beerOrderLines(Set.of(BeerOrderLine.builder()
+                        .beer(beer)
+                        .orderQuantity(2)
+                        .build()))
+                .build()));
     }
 
     private void loadBreweryData() {
