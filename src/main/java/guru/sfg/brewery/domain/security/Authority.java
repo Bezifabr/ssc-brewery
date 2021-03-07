@@ -2,10 +2,7 @@ package guru.sfg.brewery.domain.security;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.Set;
 
 @Getter
@@ -16,6 +13,7 @@ import java.util.Set;
 @Entity
 public class Authority {
 
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
