@@ -12,10 +12,12 @@ public class RestUrlAuthFilter extends AbstractRestAuthFilter {
         super(requiresAuthenticationRequestMatcher);
     }
 
+    @Override
     protected String getUsername(HttpServletRequest request) {
         return request.getParameter("API-USER");
     }
 
+    @Override
     protected String getPassword(HttpServletRequest request) {
         return request.getParameter("API-PASS");
     }

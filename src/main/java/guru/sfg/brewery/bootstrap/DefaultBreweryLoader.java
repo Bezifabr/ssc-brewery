@@ -78,17 +78,17 @@ public class DefaultBreweryLoader implements CommandLineRunner {
 
         userRepository.save(User.builder()
                 .username("spring")
-                .password(bcrypt.encode("guru"))
+                .password("{bcrypt}" + bcrypt.encode("guru"))
                 .authorities(Set.of(adminAuth, userAuth))
                 .build());
         userRepository.save(User.builder()
                 .username("user")
-                .password(bcrypt.encode("password"))
+                .password("{bcrypt}" + bcrypt.encode("password"))
                 .authority(userAuth)
                 .build());
         userRepository.save(User.builder()
                 .username("scott")
-                .password(bcrypt.encode("tiger"))
+                .password("{bcrypt}" + bcrypt.encode("tiger"))
                 .authority(customerAuth)
                 .build());
 

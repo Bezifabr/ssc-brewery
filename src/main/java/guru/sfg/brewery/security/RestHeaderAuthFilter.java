@@ -12,11 +12,13 @@ public class RestHeaderAuthFilter extends AbstractRestAuthFilter {
         super(requiresAuthenticationRequestMatcher);
     }
 
-    protected String getPassword(HttpServletRequest request) {
-        return request.getHeader("Api-Secret");
-    }
-
+    @Override
     protected String getUsername(HttpServletRequest request) {
         return request.getHeader("Api-Key");
+    }
+
+    @Override
+    protected String getPassword(HttpServletRequest request) {
+        return request.getHeader("Api-Secret");
     }
 }
